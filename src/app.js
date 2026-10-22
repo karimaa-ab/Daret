@@ -1,6 +1,6 @@
 // Daret — simulateur. Ton code commence ici.
 // Le HTML (index.html) est déjà intégré : lis-le, repère les id et les data-*, puis fais-le vivre.
-
+// US 1
 // Récupération des éléments du formulaire dans le DOM
 const form = document.querySelector("#daret-form");
 
@@ -152,6 +152,9 @@ function gererEnvoi(event) {
 
     const dateValide = validerDateDebut();
 
+    const nombreParticipants = participantsListe.children.length;
+
+    const participantsValides = nombreParticipants >= nombreMinimum && nombreParticipants <= nombreMaximum;
     if (!nomValide) {
         nomCercleInput.focus();
         return;
@@ -172,6 +175,29 @@ function gererEnvoi(event) {
         return;
     }
 
+    if (!participantsValides) {
+       participantsErreur.textContent = `Vous devez ajouter entre ${nombreMinimum} et ${nombreMaximum} participants.`;
+       participantsErreur.classList.remove("hidden");
+       participantsListe.querySelector("input")?.focus();
+       return;
+    }
+
+    const inputsParticipants = participantsListe.querySelectorAll("input");
+
+    let tousLesPrenomsValides = true;
+
+    inputsParticipants.forEach((input) => {
+        const prenomValide = validerPrenom(input);
+
+        if (!prenomValide) {
+             tousLesPrenomsValides = false;
+        }
+    });
+
+if (!tousLesPrenomsValides) {
+    participantsListe.querySelector('[aria-invalid="true"]')?.focus();
+    return;
+}
     console.log("Les champs du cercle sont valides.");
 }
 
@@ -202,3 +228,186 @@ dateDebutInput.addEventListener("change", function () {
         validerDateDebut();
     }
 });
+
+// US2 
+// Récupération des éléments HTML des participants
+
+const participantsListe = document.querySelector("#participants-liste");
+
+const ajouterParticipantBtn = document.querySelector("#ajouter-participant");
+
+const participantsCompteur = document.querySelector("#participants-compteur");
+
+const participantsErreur = document.querySelector("#participants-erreur");
+
+// Récupération des limites depuis le HTML
+
+const nombreMinimum = Number(participantsListe.dataset.min);
+
+const nombreMaximum = Number(participantsListe.dataset.max);
+
+let prochainNumero = 4;
+
+// creer un champ pour un participant 
+
+function creerChampParticipant(numero){
+
+    const participantItem = document.createElement("li");
+
+    const label =document.createElement("label");
+
+    label.textContent = `prenom ${numero}` ;
+
+    label.classList.add("block","font-medium");
+
+    const input = document.createElement("input"); 
+    input.type = "text"; 
+    input.name = "participants[]"; 
+    input.autocomplete = "off"; 
+    input.id = `participant-${numero}`;
+    label.htmlFor = input.id;
+    input.classList.add( "mt-1", "w-full", "rounded", "border", "border-daret-bordure", "px-3", "py-2" );
+
+    const erreur = document.createElement("p");
+
+    erreur.id = `erreur-participant-${numero}`;
+    erreur.classList.add("hidden", "mt-1", "text-sm", "font-medium", "text-daret-erreur");
+
+    input.setAttribute("aria-describedby", erreur.id);
+    input.setAttribute("aria-invalid", "false");
+
+    const retirerBtn = document.createElement("button");
+
+    retirerBtn.type = "button";
+
+    retirerBtn.textContent = "Retirer";
+
+    retirerBtn.classList.add("mt-2", "text-red-600");
+
+    participantItem.append(label, input, erreur,  retirerBtn);
+
+    participantsListe.appendChild(participantItem);
+}
+
+// ajouter un participant 
+
+function ajouterParticipant(){
+
+    const nombreParticipants = participantsListe.children.length ;
+
+    if (nombreParticipants >= nombreMaximum){
+
+        participantsErreur.textContent="Vous ne pouvez pas ajouter plus de 20 participants.";
+
+        participantsErreur.classList.remove("hidden");
+
+        return;
+    }
+
+    participantsErreur.textContent = "";
+
+    participantsErreur.classList.add ("hidden");
+
+    creerChampParticipant(prochainNumero);
+
+    prochainNumero++;
+
+    const nouveauNombre = participantsListe.children.length;
+
+    participantsCompteur.textContent = `${nouveauNombre} participant${nouveauNombre > 1 ? "s" : ""}`;
+}
+// Créer les 3 participants au démarrage
+creerChampParticipant(1);
+creerChampParticipant(2);
+creerChampParticipant(3);
+
+// Mettre à jour le compteur
+participantsCompteur.textContent = "3 participants";
+
+function retirerParticipant(event) {
+    const bouton = event.target;
+
+    if (bouton.textContent !== "Retirer") {
+        return;
+    }
+
+    const nombreParticipants = participantsListe.children.length;
+
+    if (nombreParticipants <= nombreMinimum) {
+        participantsErreur.textContent =`Vous devez garder au moins ${nombreMinimum} participants.`;
+        participantsErreur.classList.remove("hidden");
+        return;
+    }
+
+    const participant = bouton.parentElement;
+    participant.remove();
+
+    const nouveauNombre = participantsListe.children.length;
+
+    participantsCompteur.textContent =`${nouveauNombre} participant${nouveauNombre > 1 ? "s" : ""}`;
+}
+
+participantsListe.addEventListener("click", retirerParticipant);
+
+ajouterParticipantBtn.addEventListener("click", ajouterParticipant);
+
+// valider prenom ( longueur entre 2 et 30 )
+
+function validerPrenom(input){
+
+    const prenom = input.value.trim();
+
+    const autresInputs = participantsListe.querySelectorAll("input");
+
+    const regexPrenom = /^[\p{L}'-]+$/u;
+
+    const erreur = input.parentElement.querySelector("p");
+
+    if ( prenom.length < 2 || prenom.length > 30 ){
+
+        erreur.textContent= " le prenom doit contenir entre 2 et 30 caracteres";
+
+        erreur.classList.remove("hidden");
+
+        input.setAttribute("aria-invalid", "true");
+
+        return false;
+    }
+
+    if (!regexPrenom.test(prenom)) {
+        erreur.textContent = "Le prénom ne peut contenir que des lettres, une apostrophe ou un trait d'union.";
+
+        erreur.classList.remove("hidden");
+
+        input.setAttribute("aria-invalid", "true");
+
+        return false;
+    }
+
+    for (let i = 0; i < autresInputs.length; i++) {
+        if (autresInputs[i] === input) {
+            continue;
+        }
+
+        if (autresInputs[i].value.trim().toLowerCase() === prenom.toLowerCase()) {
+
+           erreur.textContent = "Ce prénom existe déjà.";
+
+           erreur.classList.remove("hidden");
+
+           input.setAttribute("aria-invalid", "true");
+
+           return false;
+        }
+
+    }    
+
+    erreur.textContent = "";
+
+    erreur.classList.add ("hidden");
+
+    input.setAttribute("aria-invalid", "false");
+
+    return true;
+}
+
