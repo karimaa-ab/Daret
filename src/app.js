@@ -198,7 +198,29 @@ if (!tousLesPrenomsValides) {
     participantsListe.querySelector('[aria-invalid="true"]')?.focus();
     return;
 }
-    console.log("Les champs du cercle sont valides.");
+
+const cotisation = Number(cotisationInput.value);
+const dateDebut = dateDebutInput.value;
+const periodicite = periodiciteSelect.value;
+
+// Calculs
+const nombreTours = calculerNombreTours(nombreParticipants);
+
+const montantBeneficiaire = calculerMontantBeneficiaire( cotisation, nombreParticipants);
+
+const totalParticipant = calculerTotalParticipant(cotisation, nombreTours);
+
+const datesTours = calculerDatesTours(dateDebut, periodicite, nombreTours);
+
+resumeCagnotte.textContent = `${montantBeneficiaire} MAD`;
+resumeTotalCycle.textContent = `${totalParticipant} MAD`;
+resumeNbTours.textContent = nombreTours;
+
+resumeDates.textContent =`${formaterDate(datesTours.datePremierTour)} – ${formaterDate(datesTours.dateDernierTour)}`;
+
+etatVide.classList.add("hidden");
+contenuResultat.classList.remove("hidden");
+
 }
 
 form.addEventListener("submit", gererEnvoi);
@@ -409,5 +431,61 @@ function validerPrenom(input){
     input.setAttribute("aria-invalid", "false");
 
     return true;
+}
+
+// US3
+//montant reçu par le bénéficiaire
+function calculerMontantBeneficiaire(cotisation, nombreParticipants) {
+
+    return cotisation * nombreParticipants;
+}
+// total versé par chaque participant 
+function calculerTotalParticipant(cotisation, nombreTours) {
+
+    return cotisation * nombreTours;
+}
+// nombre de tours
+function calculerNombreTours(nombreParticipants) {
+
+    return nombreParticipants;
+}
+// date du 1er et du dernier tour
+function calculerDatesTours(dateDebut, periodicite, nombreTours) {
+    const dates = [];
+    const date = new Date(`${dateDebut}T12:00:00`);
+
+    for (let i = 0; i < nombreTours; i++) {
+        dates.push(new Date(date));
+
+        if (periodicite === "hebdomadaire") {
+            date.setDate(date.getDate() + 7);
+        } else if (periodicite === "quinzaine") {
+            date.setDate(date.getDate() + 15);
+        } else if (periodicite === "mensuelle") {
+            date.setMonth(date.getMonth() + 1);
+        }
+    }
+
+    return {
+        datePremierTour: dates[0],
+        dateDernierTour: dates[dates.length - 1]
+    };
+}
+// Récupération des éléments du résumé
+const contenuResultat = document.querySelector("#contenu-resultat");
+const etatVide = document.querySelector("#etat-vide");
+
+const resumeCagnotte = document.querySelector("#resume-cagnotte");
+const resumeTotalCycle = document.querySelector("#resume-total-cycle");
+const resumeNbTours = document.querySelector("#resume-nb-tours");
+const resumeDates = document.querySelector("#resume-dates");
+
+// Formater une date pour l'affichage
+function formaterDate(date) {
+    return new Intl.DateTimeFormat("fr-FR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric"
+    }).format(date);
 }
 
