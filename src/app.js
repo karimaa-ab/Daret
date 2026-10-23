@@ -219,6 +219,7 @@ resumeNbTours.textContent = nombreTours;
 resumeDates.textContent =`${formaterDate(datesTours.datePremierTour)} – ${formaterDate(datesTours.dateDernierTour)}`;
 
 etatVide.classList.add("hidden");
+genererCalendrier();
 contenuResultat.classList.remove("hidden");
 
 }
@@ -483,9 +484,82 @@ const resumeDates = document.querySelector("#resume-dates");
 // Formater une date pour l'affichage
 function formaterDate(date) {
     return new Intl.DateTimeFormat("fr-FR", {
-        day: "2-digit",
-        month: "2-digit",
+        day: "numeric",
+        month: "long",
         year: "numeric"
     }).format(date);
+}
+
+// US4 
+
+const calendrierCorps = document.querySelector("#calendrier-corps");
+
+// recuperer les noms des participants 
+function recupererNomsParticipants(){
+
+    const inputsParticipants = participantsListe.querySelectorAll("input");
+    const noms = [];
+
+    for (let i = 0; i < inputsParticipants.length ; i++){
+        noms.push(inputsParticipants[i].value.trim());
+    }
+    return noms ;
+}
+// generation du calendrier 
+function genererCalendrier(){
+    const noms = recupererNomsParticipants();
+    const cotisation = Number(cotisationInput.value);
+    const nombreTours = noms.length;
+    const dateDebut = dateDebutInput.value;
+    const periodicite = periodiciteSelect.value;
+    const dates = [];
+    const date = new Date(`${dateDebut}T12:00:00`);
+    const jourDebut = date.getDate();
+
+    for(let i = 0 ; i < nombreTours; i++){
+        dates.push(new Date(date));
+
+        if(periodicite=== "hebdomadaire"){
+            date.setDate(date.getDate()+7);  
+        }else if (periodicite=== "quinzaine"){
+             date.setDate(date.getDate()+15);  
+        }else if (periodicite=== "mensuelle"){
+            const moisSuivant = date.getMonth() + 1;
+            const annee = date.getFullYear();
+
+            date.setDate(1);
+            date.setMonth(moisSuivant);
+
+            const dernierJour = new Date(annee, moisSuivant+1, 0).getDate();
+
+            date.setDate(Math.min(Number(jourDebut),dernierJour));
+        }
+    }
+    calendrierCorps.innerHTML = "";
+
+    for(let i = 0 ; i < nombreTours ; i++){
+        const ligne = document.createElement("tr");
+
+        const celluleNumero = document.createElement("td");
+        const celluleDate = document.createElement("td");
+        const celluleBeneficiaire = document.createElement("td");
+        const celluleMontant = document.createElement("td");
+        const celluleStatut = document.createElement("td");
+
+        ligne.appendChild(celluleNumero);
+        ligne.appendChild(celluleDate);
+        ligne.appendChild(celluleBeneficiaire);
+        ligne.appendChild(celluleMontant);
+        ligne.appendChild(celluleStatut);
+
+        celluleNumero.textContent = i + 1;
+        celluleDate.textContent = formaterDate(dates[i]);
+        celluleBeneficiaire.textContent = noms[i];
+        celluleMontant.textContent = `${calculerMontantBeneficiaire(cotisation, nombreTours)} MAD`;
+        celluleStatut.textContent = "À venir";
+
+
+        calendrierCorps.appendChild(ligne);
+    }
 }
 
