@@ -204,6 +204,10 @@ const dateDebut = dateDebutInput.value;
 const periodicite = periodiciteSelect.value;
 
 // Calculs
+ordreSaisie = recupererNomsParticipants();
+
+ordreActuel = [...ordreSaisie];
+
 const nombreTours = calculerNombreTours(nombreParticipants);
 
 const montantBeneficiaire = calculerMontantBeneficiaire( cotisation, nombreParticipants);
@@ -507,7 +511,7 @@ function recupererNomsParticipants(){
 }
 // generation du calendrier 
 function genererCalendrier(){
-    const noms = recupererNomsParticipants();
+    const noms = ordreActuel.length > 0 ? ordreActuel : recupererNomsParticipants();
     const cotisation = Number(cotisationInput.value);
     const nombreTours = noms.length;
     const dateDebut = dateDebutInput.value;
@@ -562,4 +566,33 @@ function genererCalendrier(){
         calendrierCorps.appendChild(ligne);
     }
 }
+
+// US5
+let ordreSaisie = [];
+let ordreActuel = [];
+function tirerOrdre(){
+    const noms = recupererNomsParticipants();
+
+    for (let i = noms.length-1 ; i > 0 ;i--){
+
+        const j = Math.floor(Math.random()*(i+1));
+
+        const temp = noms[i];
+        noms[i] = noms[j];
+        noms[j] = temp;
+    }
+    ordreActuel = noms;
+    genererCalendrier();
+}
+
+function retournerOrdreSaisie() {
+    ordreActuel = [...ordreSaisie];
+    genererCalendrier();
+}
+
+const boutonTirage = document.querySelector("#tirage-au-sort");
+boutonTirage.addEventListener("click",tirerOrdre);
+
+const boutonOrdreSaisie = document.querySelector("#ordre-saisie");
+boutonOrdreSaisie.addEventListener("click", retournerOrdreSaisie);   
 
