@@ -566,6 +566,7 @@ function genererCalendrier(){
         celluleNumero.textContent = i + 1;
         celluleDate.textContent = formaterDate(dates[i]);
         celluleBeneficiaire.textContent = noms[i];
+        celluleBeneficiaire.classList.add("nom-beneficiaire");
         celluleMontant.textContent = `${calculerMontantBeneficiaire(cotisation, nombreTours)} MAD`;
         celluleStatut.textContent = "À venir";
 
@@ -668,5 +669,78 @@ function makeProchainTour() {
         }
     }
 }
+
+// US7
+
+const dialogDetail = document.querySelector("#detail-tour");
+const detailTitre = document.querySelector("#detail-titre");
+const detailDate = document.querySelector("#detail-date");
+const detailBeneficiaire = document.querySelector("#detail-beneficiaire");
+const detailMontant = document.querySelector("#detail-montant");
+const detailContributeurs = document.querySelector("#detail-contributeurs");
+const boutonFermerDetail = document.querySelector("#detail-fermer");
+let elementQuiOuvreDialog = null;
+
+function ouvrirDetailTour(ligne, elementOuverture){
+    elementQuiOuvreDialog = elementOuverture;
+    const cellules = ligne.querySelectorAll("td");
+
+    const numeroTour = cellules[0].textContent;
+    const dateTour = cellules[1].textContent; 
+    const beneficiaire = cellules[2].textContent;
+    const montant = cellules[3].textContent;
+
+    detailTitre.textContent = `Détail du tour n° ${numeroTour}`;
+    detailDate.textContent = dateTour;
+    detailBeneficiaire.textContent = beneficiaire; 
+    detailMontant.textContent = montant;
+
+    detailContributeurs.innerHTML = "";
+
+    const nomsParticipants = recupererNomsParticipants();
+
+    for (let i = 0; i < nomsParticipants.length; i++) {
+        if (nomsParticipants[i] !== beneficiaire) {
+           const element = document.createElement("li");
+           element.textContent = nomsParticipants[i];
+           detailContributeurs.appendChild(element);
+        }
+    }
+    dialogDetail.showModal();
+}
+
+function gererClicBeneficiaire(event) {
+    const beneficiaireClique = event.target.closest(".nom-beneficiaire");
+
+    if (!beneficiaireClique) {
+        return;
+    }
+
+    const ligne = beneficiaireClique.closest("tr");
+
+    beneficiaireClique.setAttribute("tabindex","-1")
+
+    ouvrirDetailTour(ligne, beneficiaireClique);
+}
+
+calendrierCorps.addEventListener("click", gererClicBeneficiaire);
+
+function fermerDetailTour() {
+    dialogDetail.close();
+    elementQuiOuvreDialog.focus();
+console.log("Fonction fermerDetailTour appelée");}
+
+boutonFermerDetail.addEventListener("click", fermerDetailTour);
+
+function fermerAuClicExterieur(event) {
+    if (event.target === dialogDetail) {
+        dialogDetail.close();
+        elementQuiOuvreDialog.focus();
+    }
+}
+
+dialogDetail.addEventListener("click", fermerAuClicExterieur);
+
+
 
 
