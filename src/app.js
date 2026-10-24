@@ -740,7 +740,46 @@ function fermerAuClicExterieur(event) {
 }
 
 dialogDetail.addEventListener("click", fermerAuClicExterieur);
+// US8
+const boutonReinitialiser = document.querySelector("#reinitialiser");
+
+function reinitialiser() {
+    form.reset();
+    validationActive = false;
+    ordreSaisie = [];
+    ordreActuel = [];
 
 
+    effacerErreur(nomCercleInput, nomCercleErreur);
+    effacerErreur(cotisationInput, cotisationErreur);
+    effacerErreur(periodiciteSelect, periodiciteErreur);
+    effacerErreur(dateDebutInput, dateDebutErreur);
+
+    participantsErreur.textContent = "";
+    participantsErreur.classList.add("hidden");
+
+    participantsListe.innerHTML = "";
+
+    creerChampParticipant(1);
+    creerChampParticipant(2);
+    creerChampParticipant(3);
+
+    prochainNumero = 4;
+
+    participantsCompteur.textContent = "3 participants";
+
+    calendrierCorps.innerHTML = "";
+
+    resumeCagnotte.textContent = "";
+    resumeTotalCycle.textContent = "";
+    resumeNbTours.textContent = "";
+    resumeDates.textContent = "";
+
+    compteurTours.textContent = "";
+
+    contenuResultat.classList.add("hidden");
+    etatVide.classList.remove("hidden");
+}
+boutonReinitialiser.addEventListener("click", reinitialiser);
 
 
