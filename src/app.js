@@ -728,7 +728,6 @@ calendrierCorps.addEventListener("click", gererClicBeneficiaire);
 function fermerDetailTour() {
     dialogDetail.close();
     elementQuiOuvreDialog.focus();
-console.log("Fonction fermerDetailTour appelée");}
 
 boutonFermerDetail.addEventListener("click", fermerDetailTour);
 
