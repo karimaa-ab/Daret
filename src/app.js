@@ -549,13 +549,20 @@ function genererCalendrier(){
         const celluleBeneficiaire = document.createElement("td");
         const celluleMontant = document.createElement("td");
         const celluleStatut = document.createElement("td");
+        const celluleAction = document.createElement("td");
 
         ligne.appendChild(celluleNumero);
         ligne.appendChild(celluleDate);
         ligne.appendChild(celluleBeneficiaire);
         ligne.appendChild(celluleMontant);
         ligne.appendChild(celluleStatut);
-
+        ligne.appendChild(celluleAction);
+        const boutonStatut = document.createElement("button");
+        boutonStatut.classList.add("bouton-statut");
+        boutonStatut.textContent = "Terminé";
+        boutonStatut.classList.add( "text-black","border", "px-3", "py-1", "rounded");
+        celluleAction.appendChild(boutonStatut);
+    
         celluleNumero.textContent = i + 1;
         celluleDate.textContent = formaterDate(dates[i]);
         celluleBeneficiaire.textContent = noms[i];
@@ -565,6 +572,7 @@ function genererCalendrier(){
 
         calendrierCorps.appendChild(ligne);
     }
+    makeProchainTour();
 }
 
 // US5
@@ -595,4 +603,70 @@ boutonTirage.addEventListener("click",tirerOrdre);
 
 const boutonOrdreSaisie = document.querySelector("#ordre-saisie");
 boutonOrdreSaisie.addEventListener("click", retournerOrdreSaisie);   
+
+// US6
+function changerStatut(ligne){
+    const celluleStatut = ligne.querySelector("td:nth-child(5)");
+    const bouton = ligne.querySelector(".bouton-statut");
+
+    if(celluleStatut.textContent=== "À venir"){
+        celluleStatut.textContent = "Terminé";
+        ligne.classList.add("ligne-terminee");
+        bouton.textContent = "Annuler";
+
+    }else{
+        celluleStatut.textContent = "À venir";
+        ligne.classList.remove("ligne-terminee");
+        bouton.textContent = "Terminé";
+    }
+}
+
+function gererClicTableau(event) {
+    const bouton = event.target.closest(".bouton-statut");
+
+    if(!bouton){
+        return;
+    }
+
+    const ligne = bouton.closest("tr"); 
+    changerStatut(ligne);
+    makeCompteur();
+    makeProchainTour();
+}
+
+calendrierCorps.addEventListener("click", gererClicTableau);
+
+const compteurTours = document.querySelector("#compteur-tours");
+
+function makeCompteur(){
+    const lignes = calendrierCorps.querySelectorAll("tr");
+    let nombreTermines = 0;
+
+    for(let i = 0 ; i < lignes.length ; i++){
+        const celluleStatut = lignes[i].querySelector("td:nth-child(5)");
+
+        if(celluleStatut.textContent=== "Terminé"){
+            nombreTermines++;
+        }
+    }
+    compteurTours.textContent = `${nombreTermines} tours terminés sur ${lignes.length}`;
+}
+
+function makeProchainTour() {
+    const lignes = calendrierCorps.querySelectorAll("tr");
+
+    for (let i = 0; i < lignes.length; i++) {
+        lignes[i].classList.remove("prochain-tour");
+    }
+
+    for (let i = 0; i < lignes.length; i++) {
+        const celluleStatut = lignes[i].querySelector("td:nth-child(5)");
+
+        if (celluleStatut.textContent === "À venir") {
+            lignes[i].classList.add("prochain-tour");
+            break;
+        }
+    }
+}
+
 
